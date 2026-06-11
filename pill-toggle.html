@@ -27,14 +27,18 @@
     height: 44px;
     border-radius: 22px;
     background: #3a3a5c;
+    border: 2.5px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     cursor: pointer;
-    transition: background 0.35s ease;
+    transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
 
   .pill-toggle.active {
     background: #6c5ce7;
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 12px rgba(108, 92, 231, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
   .pill-toggle .knob {
@@ -45,9 +49,8 @@
     height: 36px;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
     will-change: transform;
-    /* 由 JS 控制动画，不在此设置 transition */
   }
 
   /* ---- 演示用：不同尺寸 ---- */
@@ -55,34 +58,42 @@
     width: 56px;
     height: 30px;
     border-radius: 15px;
+    border-width: 2px;
   }
   .pill-toggle.sm .knob {
     top: 3px;
     left: 3px;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
 
   .pill-toggle.lg {
     width: 110px;
     height: 58px;
     border-radius: 29px;
+    border-width: 3px;
   }
   .pill-toggle.lg .knob {
     top: 5px;
     left: 5px;
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
   }
 
   .pill-toggle.green.active {
     background: #00b894;
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 12px rgba(0, 184, 148, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
   .pill-toggle.orange.active {
     background: #e17055;
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 12px rgba(225, 112, 85, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
   .pill-toggle.blue.active {
     background: #0984e3;
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 2px 12px rgba(9, 132, 227, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 </style>
 </head>
@@ -111,31 +122,45 @@ function togglePill(el) {
   const knob = el.querySelector('.knob');
   const isActive = el.classList.toggle('active');
 
-  // 计算行程：药丸宽度 - 圆形直径 - 左右间距
-  const pillWidth = el.offsetWidth;
+  // 计算行程：药丸内容区宽度 - 圆形宽度 - 左右间距
+  const pillWidth = el.clientWidth;
   const knobWidth = knob.offsetWidth;
   const knobLeft = parseFloat(getComputedStyle(knob).left);
   const travel = pillWidth - knobWidth - knobLeft * 2;
 
-  // 目标偏移
+  // 起始和目标位置
+  const startX = isActive ? 0 : travel;
   const targetX = isActive ? travel : 0;
 
-  // 反弹参数
-  const bounceRange = travel * 0.01; // 反弹范围 1%
-  // 活跃端反弹方向：向回弹（负方向）；非活跃端反弹方向：向回弹（正方向）
+  // 反弹参数：行程的 1%，最少 2px 保证可见
+  const bounceRange = Math.max(travel * 0.01, 2);
   const bounceDirection = isActive ? -1 : 1;
 
-  // 使用 Web Animations API 实现丝滑滑动 + 反弹
+  // 分段动画：滑动 → 碰撞反弹 → 归位
   const keyframes = [
-    { transform: `translateX(${isActive ? 0 : travel}px)`, offset: 0 },
-    { transform: `translateX(${targetX}px)`, offset: 0.75 },
-    { transform: `translateX(${targetX + bounceDirection * bounceRange}px)`, offset: 0.88 },
-    { transform: `translateX(${targetX}px)`, offset: 1 },
+    {
+      transform: `translateX(${startX}px)`,
+      offset: 0,
+      easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    },
+    {
+      transform: `translateX(${targetX}px)`,
+      offset: 0.65,
+      easing: 'cubic-bezier(0.34, 0, 0.75, 0)',
+    },
+    {
+      transform: `translateX(${targetX + bounceDirection * bounceRange}px)`,
+      offset: 0.82,
+      easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    },
+    {
+      transform: `translateX(${targetX}px)`,
+      offset: 1,
+    },
   ];
 
   const animation = knob.animate(keyframes, {
-    duration: 400,
-    easing: 'ease-out',
+    duration: 450,
     fill: 'forwards',
   });
 
