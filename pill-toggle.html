@@ -35,7 +35,13 @@
     border-radius: 22px;
     background: var(--pill-cavity-color);
     border: 2.5px solid var(--pill-border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    /* 伪3D边框：外层高光(左上) + 外层暗影(右下) + 内层高光 + 内层暗影 + 整体投影 */
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 255, 255, 0.15),
+      inset -1px -1px 0 rgba(0, 0, 0, 0.25),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+      0 2px 6px rgba(0, 0, 0, 0.5),
+      0 1px 2px rgba(0, 0, 0, 0.3);
     cursor: pointer;
     transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
     user-select: none;
@@ -45,7 +51,12 @@
   .pill-toggle.active {
     background: var(--pill-cavity-active-color);
     border-color: var(--pill-border-active-color);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 255, 255, 0.2),
+      inset -1px -1px 0 rgba(0, 0, 0, 0.2),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 3px 10px rgba(0, 0, 0, 0.4),
+      0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   .pill-toggle .knob {
@@ -56,7 +67,12 @@
     height: 32px;
     border-radius: 50%;
     background: var(--pill-knob-color);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+    /* 伪3D球体：内高光(左上) + 内暗影(右下) + 外投影 */
+    box-shadow:
+      inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+      inset -2px -2px 4px rgba(0, 0, 0, 0.15),
+      0 2px 6px rgba(0, 0, 0, 0.4),
+      0 1px 2px rgba(0, 0, 0, 0.3);
     will-change: transform;
     transition: background 0.35s ease;
   }
