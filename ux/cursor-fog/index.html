@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>彩雾拖尾</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0a;
+      overflow: hidden;
+    }
+
+    .text-cursor-container {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+    }
+
+    .text-cursor-inner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+    }
+
+    .text-cursor-item {
+      position: absolute;
+      user-select: none;
+      white-space: nowrap;
+      font-size: 1.875rem;
+      border-radius: 50%;
+      will-change: transform;
+    }
+
+    .info {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 0.875rem;
+      pointer-events: none;
+      text-align: center;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="text-cursor-container" id="container">
+    <div class="text-cursor-inner" id="inner"></div>
+  </div>
+  <div class="info">移动鼠标查看光雾效果</div>
+
+  <script>
+    const inner = document.getElementById('inner');
+    const container = document.getElementById('container');
+
+    const count = 30;
+    const items = [];
+
+    // Warm rainbow palette - hue shifts along the trail
+    function getFogGradient(i) {
+      const hue = (i / count) * 300 + 10; // 10° (red) -> 310° (magenta), skip cold blue range
+      const alpha1 = 0.45 - (i / count) * 0.35;
+      const alpha2 = alpha1 * 0.2;
+      return `radial-gradient(circle, hsla(${hue}, 100%, 65%, ${alpha1}) 0%, hsla(${hue}, 100%, 55%, ${alpha2}) 40%, transparent 70%)`;
+    }
+
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.className = 'text-cursor-item';
+
+      const t = i / count;
+      const size = 30 - t * 16; // 30px -> 14px
+      const blur = 3 + t * 5;   // 3px -> 8px
+
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      el.style.background = getFogGradient(i);
+      el.style.filter = `blur(${blur}px)`;
+      el.style.opacity = 1;
+      el.style.transition = 'opacity 0.6s ease-out';
+
+      inner.appendChild(el);
+      items.push({
+        el,
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+        prevX: window.innerWidth / 2,
+        prevY: window.innerHeight / 2,
+        baseSize: size,
+        stagnantFrames: 0,
+      });
+    }
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let prevMouseX = mouseX;
+    let prevMouseY = mouseY;
+
+    container.addEventListener('mousemove', e => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function animate() {
+      const mouseDx = mouseX - prevMouseX;
+      const mouseDy = mouseY - prevMouseY;
+      const mouseMoving = Math.abs(mouseDx) + Math.abs(mouseDy) > 0.5;
+      prevMouseX = mouseX;
+      prevMouseY = mouseY;
+
+      let leaderX = mouseX;
+      let leaderY = mouseY;
+
+      items.forEach((item, i) => {
+        const speed = 0.22 - i * 0.006;
+        const effectiveSpeed = Math.max(speed, 0.025);
+
+        item.prevX = item.x;
+        item.prevY = item.y;
+        item.x += (leaderX - item.x) * effectiveSpeed;
+        item.y += (leaderY - item.y) * effectiveSpeed;
+
+        const dx = item.x - item.prevX;
+        const dy = item.y - item.prevY;
+        const moved = Math.abs(dx) + Math.abs(dy);
+
+        // Track stagnation - how long this element has been nearly still
+        if (moved < 0.3 && !mouseMoving) {
+          item.stagnantFrames++;
+        } else {
+          item.stagnantFrames = Math.max(0, item.stagnantFrames - 2);
+        }
+
+        // Fade based on position in trail + stagnation
+        const trailFade = 1 - (i / count) * 0.85;
+        const stagnantFade = Math.max(0, 1 - item.stagnantFrames * 0.008);
+        const opacity = trailFade * stagnantFade;
+
+        const halfSize = item.baseSize / 2;
+        item.el.style.transform = `translate3d(${item.x - halfSize}px, ${item.y - halfSize}px, 0)`;
+        item.el.style.opacity = opacity;
+
+        leaderX = item.x;
+        leaderY = item.y;
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

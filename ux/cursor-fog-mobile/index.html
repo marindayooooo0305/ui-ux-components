@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>彩雾拖尾 · 移动版</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0a;
+      overflow: hidden;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+      height: 100dvh;
+      width: 100vw;
+    }
+
+    .text-cursor-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .text-cursor-inner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+    }
+
+    .text-cursor-item {
+      position: absolute;
+      user-select: none;
+      white-space: nowrap;
+      font-size: 1.875rem;
+      border-radius: 50%;
+      will-change: transform;
+    }
+
+    .info {
+      position: fixed;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.25);
+      font-size: 0.75rem;
+      pointer-events: none;
+      text-align: center;
+      z-index: 10;
+      line-height: 1.6;
+      transition: opacity 1s ease;
+    }
+
+    .info.hidden {
+      opacity: 0;
+    }
+
+    /* Mobile tap hint dot */
+    .tap-hint {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255, 255, 255, 0.15);
+      font-size: 0.85rem;
+      pointer-events: none;
+      z-index: 10;
+      text-align: center;
+      line-height: 1.8;
+      animation: pulse-hint 2.5s ease-in-out infinite;
+    }
+
+    .tap-hint .icon {
+      display: block;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    @keyframes pulse-hint {
+      0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    }
+  </style>
+</head>
+<body>
+  <div class="text-cursor-container" id="container">
+    <div class="text-cursor-inner" id="inner"></div>
+  </div>
+  <div class="tap-hint" id="hint">
+    <span class="icon">👆</span>
+    点击或滑动屏幕
+  </div>
+  <div class="info" id="info">点击移动 · 滑动跟随</div>
+
+  <script>
+    const inner = document.getElementById('inner');
+    const container = document.getElementById('container');
+    const hint = document.getElementById('hint');
+    const info = document.getElementById('info');
+
+    const count = 30;
+    const items = [];
+
+    function getFogGradient(i) {
+      const hue = (i / count) * 300 + 10;
+      const alpha1 = 0.45 - (i / count) * 0.35;
+      const alpha2 = alpha1 * 0.2;
+      return `radial-gradient(circle, hsla(${hue}, 100%, 65%, ${alpha1}) 0%, hsla(${hue}, 100%, 55%, ${alpha2}) 40%, transparent 70%)`;
+    }
+
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.className = 'text-cursor-item';
+
+      const t = i / count;
+      const size = 30 - t * 16;
+      const blur = 3 + t * 5;
+
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      el.style.background = getFogGradient(i);
+      el.style.filter = `blur(${blur}px)`;
+      el.style.opacity = 1;
+
+      inner.appendChild(el);
+      items.push({
+        el,
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+        prevX: window.innerWidth / 2,
+        prevY: window.innerHeight / 2,
+        baseSize: size,
+        stagnantFrames: 0,
+      });
+    }
+
+    // ── 输入状态 ──
+    const target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let isActive = false;          // 是否正在交互（手指按下或鼠标按下）
+    let isFollowing = false;       // 是否处于滑动跟随模式
+    let prevPointerX = target.x;
+    let prevPointerY = target.y;
+
+    // ── 统一设置目标点 ──
+    function setTarget(x, y) {
+      target.x = x;
+      target.y = y;
+      isActive = true;
+      // 隐藏提示
+      hint.classList.add('hidden');
+      info.classList.add('hidden');
+    }
+
+    // ── 鼠标事件（PC 调试） ──
+    container.addEventListener('mousedown', e => {
+      setTarget(e.clientX, e.clientY);
+      isFollowing = false;
+    });
+
+    container.addEventListener('mousemove', e => {
+      if (e.buttons > 0) {
+        // 按住拖动 → 跟随
+        if (!isFollowing && isActive) {
+          const dx = e.clientX - prevPointerX;
+          const dy = e.clientY - prevPointerY;
+          if (Math.abs(dx) + Math.abs(dy) > 8) {
+            isFollowing = true;
+          }
+        }
+        if (isFollowing) {
+          setTarget(e.clientX, e.clientY);
+        } else {
+          setTarget(e.clientX, e.clientY);
+        }
+      }
+      prevPointerX = e.clientX;
+      prevPointerY = e.clientY;
+    });
+
+    container.addEventListener('mouseup', () => {
+      isActive = false;
+      isFollowing = false;
+    });
+
+    container.addEventListener('mouseleave', () => {
+      isActive = false;
+      isFollowing = false;
+    });
+
+    // ── 触摸事件（移动端） ──
+    container.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      prevPointerX = touch.clientX;
+      prevPointerY = touch.clientY;
+      setTarget(touch.clientX, touch.clientY);
+      isFollowing = false;
+    }, { passive: false });
+
+    container.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const touch = e.touches[0];
+
+      // 判断是否进入跟随模式：移动距离超过阈值
+      if (!isFollowing) {
+        const dx = touch.clientX - prevPointerX;
+        const dy = touch.clientY - prevPointerY;
+        if (Math.abs(dx) + Math.abs(dy) > 8) {
+          isFollowing = true;
+        }
+      }
+
+      setTarget(touch.clientX, touch.clientY);
+      prevPointerX = touch.clientX;
+      prevPointerY = touch.clientY;
+    }, { passive: false });
+
+    container.addEventListener('touchend', e => {
+      isActive = false;
+      isFollowing = false;
+    });
+
+    container.addEventListener('touchcancel', () => {
+      isActive = false;
+      isFollowing = false;
+    });
+
+    // ── 动画循环 ──
+    function animate() {
+      let leaderX = target.x;
+      let leaderY = target.y;
+
+      items.forEach((item, i) => {
+        const speed = 0.22 - i * 0.006;
+        const effectiveSpeed = Math.max(speed, 0.025);
+
+        item.prevX = item.x;
+        item.prevY = item.y;
+        item.x += (leaderX - item.x) * effectiveSpeed;
+        item.y += (leaderY - item.y) * effectiveSpeed;
+
+        const dx = item.x - item.prevX;
+        const dy = item.y - item.prevY;
+        const moved = Math.abs(dx) + Math.abs(dy);
+
+        if (moved < 0.3 && !isActive) {
+          item.stagnantFrames++;
+        } else {
+          item.stagnantFrames = Math.max(0, item.stagnantFrames - 2);
+        }
+
+        const trailFade = 1 - (i / count) * 0.85;
+        const stagnantFade = Math.max(0, 1 - item.stagnantFrames * 0.008);
+        const opacity = trailFade * stagnantFade;
+
+        const halfSize = item.baseSize / 2;
+        item.el.style.transform = `translate3d(${item.x - halfSize}px, ${item.y - halfSize}px, 0)`;
+        item.el.style.opacity = opacity;
+
+        leaderX = item.x;
+        leaderY = item.y;
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
