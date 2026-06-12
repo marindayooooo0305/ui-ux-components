@@ -5,604 +5,775 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Liquid Glass Card - 液态玻璃卡片</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* ============================================
+     液态玻璃卡片 - Liquid Glass Card
+     边缘透镜效果 + 光线扭曲
+     格式: 1x1 / 2x2 / 4x2
+     ============================================ */
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    /* 玻璃材质变量 */
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-blur: 22px;
+    --glass-saturate: 180%;
+    --lens-scale: 25;
+    --lens-blur: 8px;
+    --edge-glow: rgba(255, 255, 255, 0.12);
+    --specular-opacity: 0.35;
+    --caustic-opacity: 0.06;
+    --chromatic-offset: 1.5px;
+  }
 
   body {
-    overflow: hidden;
-    background: #0a0a14;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #0a0a12;
     font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    color: #fff;
   }
 
-  canvas {
-    display: block;
+  /* ---- 场景背景 ---- */
+  .scene {
     position: fixed;
     inset: 0;
+    z-index: 0;
+    overflow: hidden;
   }
 
-  /* ---- 模式选择器 ---- */
-  .controls {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 5px;
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.7;
+    will-change: transform;
   }
 
-  .control-btn {
-    padding: 10px 20px;
-    border-radius: 16px;
-    border: none;
-    background: transparent;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    font-family: inherit;
+  .blob-1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, #6366f1 0%, #4f46e5 50%, transparent 70%);
+    top: -10%;
+    left: -5%;
+    animation: drift-1 20s ease-in-out infinite;
   }
 
-  .control-btn:hover {
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  .control-btn.active {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  /* ---- 格式标签 ---- */
-  .format-labels {
-    position: fixed;
+  .blob-2 {
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, #ec4899 0%, #be185d 50%, transparent 70%);
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    right: -8%;
+    animation: drift-2 25s ease-in-out infinite;
+  }
+
+  .blob-3 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, #06b6d4 0%, #0891b2 50%, transparent 70%);
+    bottom: -5%;
+    left: 30%;
+    animation: drift-3 22s ease-in-out infinite;
+  }
+
+  .blob-4 {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, #f59e0b 0%, #d97706 50%, transparent 70%);
+    top: 20%;
+    left: 55%;
+    animation: drift-4 18s ease-in-out infinite;
+  }
+
+  .blob-5 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, #10b981 0%, #059669 50%, transparent 70%);
+    bottom: 20%;
+    left: 10%;
+    animation: drift-5 24s ease-in-out infinite;
+  }
+
+  @keyframes drift-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(80px, 60px) scale(1.1); }
+    66% { transform: translate(-40px, 30px) scale(0.95); }
+  }
+  @keyframes drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-70px, -50px) scale(1.05); }
+    66% { transform: translate(30px, -80px) scale(0.9); }
+  }
+  @keyframes drift-3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(60px, -40px) scale(1.08); }
+    66% { transform: translate(-50px, 20px) scale(0.92); }
+  }
+  @keyframes drift-4 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-50px, 70px) scale(0.95); }
+    66% { transform: translate(40px, -30px) scale(1.1); }
+  }
+  @keyframes drift-5 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(70px, 30px) scale(1.05); }
+    66% { transform: translate(-60px, -50px) scale(0.98); }
+  }
+
+  /* ---- 卡片展示区 ---- */
+  .card-showcase {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 40px;
+    max-width: 1100px;
+  }
+
+  /* ---- 玻璃卡片基础 ---- */
+  .glass-card {
+    position: relative;
+    border-radius: 24px;
+    cursor: default;
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    will-change: transform;
+  }
+
+  .glass-card:hover {
+    z-index: 10;
+  }
+
+  /* 格式尺寸 */
+  .size-1x1 { width: 200px; height: 200px; }
+  .size-2x2 { width: 420px; height: 420px; }
+  .size-4x2 { width: 420px; height: 200px; }
+
+  /* ---- 透镜扭曲层 ---- */
+  .lens-layer {
+    position: absolute;
+    inset: -12px;
+    border-radius: 32px;
+    backdrop-filter: blur(2px) saturate(120%);
+    -webkit-backdrop-filter: blur(2px) saturate(120%);
+    filter: url(#liquid-lens);
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  /* ---- 玻璃主体 ---- */
+  .glass-body {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid var(--glass-border);
+    z-index: 1;
+    overflow: hidden;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* ---- 棱镜边缘（色散效果） ---- */
+  .prismatic-edge {
+    position: absolute;
+    inset: -1px;
+    border-radius: 25px;
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .prismatic-edge::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 26px;
+    padding: 2px;
+    background: conic-gradient(
+      from var(--prism-angle, 0deg),
+      rgba(255, 0, 0, 0.0) 0%,
+      rgba(255, 60, 60, 0.25) 8%,
+      rgba(255, 180, 0, 0.2) 16%,
+      rgba(255, 255, 0, 0.15) 24%,
+      rgba(60, 255, 60, 0.2) 32%,
+      rgba(0, 200, 255, 0.25) 40%,
+      rgba(80, 80, 255, 0.2) 48%,
+      rgba(180, 0, 255, 0.25) 56%,
+      rgba(255, 0, 180, 0.2) 64%,
+      rgba(255, 0, 0, 0.0) 72%,
+      transparent 72%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.6;
+    animation: prism-rotate 8s linear infinite;
+  }
+
+  @keyframes prism-rotate {
+    to { --prism-angle: 360deg; }
+  }
+
+  @property --prism-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  /* ---- 色差边缘（chromatic aberration） ---- */
+  .chromatic-edge {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    z-index: 3;
+    pointer-events: none;
+    box-shadow:
+      inset 1px 0 0 rgba(255, 80, 80, 0.12),
+      inset -1px 0 0 rgba(80, 80, 255, 0.12),
+      inset 0 1px 0 rgba(80, 255, 80, 0.08),
+      inset 0 -1px 0 rgba(255, 80, 255, 0.08);
+  }
+
+  /* ---- 高光反射 ---- */
+  .specular {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    z-index: 4;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .specular::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: var(--spec-y, -80%);
+    left: var(--spec-x, -80%);
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 255, 255, var(--specular-opacity)) 0%,
+      rgba(255, 255, 255, 0.08) 30%,
+      transparent 60%
+    );
+    transition: top 0.3s ease-out, left 0.3s ease-out;
+    mix-blend-mode: overlay;
+  }
+
+  /* ---- 焦散光纹 ---- */
+  .caustics {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
     z-index: 5;
     pointer-events: none;
+    overflow: hidden;
+    opacity: var(--caustic-opacity);
   }
 
+  .caustics::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background:
+      radial-gradient(ellipse 80px 60px at 30% 25%, rgba(255,255,255,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 60px 90px at 70% 60%, rgba(255,255,255,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 50px 50px at 50% 80%, rgba(255,255,255,0.3) 0%, transparent 70%),
+      radial-gradient(ellipse 70px 40px at 20% 70%, rgba(255,255,255,0.35) 0%, transparent 70%);
+    animation: caustic-drift 12s ease-in-out infinite;
+    mix-blend-mode: overlay;
+  }
+
+  @keyframes caustic-drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    25% { transform: translate(15px, -10px) rotate(3deg) scale(1.05); }
+    50% { transform: translate(-10px, 15px) rotate(-2deg) scale(0.98); }
+    75% { transform: translate(8px, 8px) rotate(1deg) scale(1.02); }
+  }
+
+  /* ---- 内部折射光带 ---- */
+  .refraction-band {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    z-index: 6;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .refraction-band::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -50%;
+    width: 200%;
+    height: 40%;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.03) 30%,
+      rgba(255, 255, 255, 0.06) 50%,
+      rgba(255, 255, 255, 0.03) 70%,
+      transparent 100%
+    );
+    transform: rotate(-15deg);
+    animation: refraction-sweep 6s ease-in-out infinite;
+  }
+
+  @keyframes refraction-sweep {
+    0%, 100% { top: -40%; opacity: 0.6; }
+    50% { top: 100%; opacity: 0.3; }
+  }
+
+  /* ---- 液态呼吸动画 ---- */
+  .glass-card::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 26px;
+    z-index: -1;
+    background: transparent;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+    animation: liquid-breathe 4s ease-in-out infinite;
+  }
+
+  @keyframes liquid-breathe {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+      border-radius: 26px;
+    }
+    50% {
+      box-shadow: 0 0 35px rgba(255, 255, 255, 0.06);
+      border-radius: 28px;
+    }
+  }
+
+  /* ---- 卡片内容 ---- */
+  .card-content {
+    position: relative;
+    z-index: 7;
+    padding: 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  .card-value {
+    font-size: 42px;
+    font-weight: 200;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .card-value .unit {
+    font-size: 18px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: 4px;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.5;
+  }
+
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    margin-bottom: 12px;
+  }
+
+  /* ---- 2x2 卡片内容 ---- */
+  .size-2x2 .card-content {
+    padding: 32px;
+  }
+
+  .size-2x2 .card-title {
+    font-size: 24px;
+  }
+
+  .size-2x2 .card-value {
+    font-size: 64px;
+  }
+
+  .size-2x2 .card-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    border-radius: 14px;
+  }
+
+  /* ---- 4x2 卡片内容 ---- */
+  .size-4x2 .card-content {
+    padding: 28px 32px;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .size-4x2 .card-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .size-4x2 .card-visual {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .size-4x2 .bar {
+    width: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .size-4x2 .bar.active {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* ---- 标签区 ---- */
   .format-label {
     position: absolute;
-    font-size: 12px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.2);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    text-align: center;
-    transition: opacity 0.4s ease;
-  }
-
-  /* ---- 提示 ---- */
-  .hint {
-    position: fixed;
-    top: 32px;
+    bottom: -28px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 10;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.25);
-    letter-spacing: 0.04em;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  /* ---- 点击涟漪 ---- */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    transform: scale(0);
+    animation: ripple-expand 0.6s ease-out forwards;
     pointer-events: none;
+    z-index: 8;
   }
 
-  @media (max-width: 640px) {
-    .control-btn {
-      padding: 8px 14px;
-      font-size: 12px;
+  @keyframes ripple-expand {
+    to {
+      transform: scale(4);
+      opacity: 0;
     }
-    .controls { gap: 4px; }
   }
 
+  /* ---- 响应式 ---- */
+  @media (max-width: 768px) {
+    .card-showcase {
+      padding: 40px 20px;
+      gap: 40px;
+    }
+    .size-2x2 { width: 320px; height: 320px; }
+    .size-4x2 { width: 320px; height: 160px; }
+    .size-2x2 .card-value { font-size: 48px; }
+  }
+
+  /* ---- 减少动效偏好 ---- */
   @media (prefers-reduced-motion: reduce) {
-    * { animation-duration: 0.01ms !important; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .lens-layer {
+      filter: none !important;
+    }
   }
 </style>
 </head>
 <body>
 
-<div class="hint">Move your cursor to interact with the glass</div>
+<!-- SVG 滤镜定义 -->
+<svg class="svg-defs" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <!-- 液态透镜扭曲滤镜 -->
+    <filter id="liquid-lens" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <!-- 生成有机噪声纹理 -->
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="0.012"
+        numOctaves="3"
+        seed="3"
+        result="noise"
+      />
 
-<div class="controls" id="controls">
-  <button class="control-btn active" data-mode="lens">Lens · 1×1</button>
-  <button class="control-btn" data-mode="cube">Cube · 2×2</button>
-  <button class="control-btn" data-mode="bar">Bar · 4×2</button>
+      <!-- 构建边缘蒙版：膨胀源形状 → 减去原始 → 得到外环 -->
+      <feMorphology operator="dilate" radius="22" in="SourceAlpha" result="expanded" />
+      <feComposite operator="out" in="expanded" in2="SourceAlpha" result="outerRing" />
+
+      <!-- 柔化边缘蒙版 -->
+      <feGaussianBlur in="outerRing" stdDeviation="10" result="softEdge" />
+
+      <!-- 仅在边缘区域应用噪声 -->
+      <feComposite operator="in" in="noise" in2="softEdge" result="edgeNoise" />
+
+      <!-- 中性基底（无位移） -->
+      <feFlood flood-color="rgb(128,128,128)" result="neutral" />
+
+      <!-- 合成位移贴图：中性中心 + 噪声边缘 -->
+      <feComposite operator="over" in="neutral" in2="edgeNoise" result="dispMap" />
+
+      <!-- 应用位移映射 -->
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="dispMap"
+        scale="25"
+        xChannelSelector="R"
+        yChannelSelector="G"
+      />
+    </filter>
+
+    <!-- 增强版透镜扭曲（用于 2x2 大卡片） -->
+    <filter id="liquid-lens-lg" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="0.008"
+        numOctaves="4"
+        seed="7"
+        result="noise"
+      />
+      <feMorphology operator="dilate" radius="30" in="SourceAlpha" result="expanded" />
+      <feComposite operator="out" in="expanded" in2="SourceAlpha" result="outerRing" />
+      <feGaussianBlur in="outerRing" stdDeviation="14" result="softEdge" />
+      <feComposite operator="in" in="noise" in2="softEdge" result="edgeNoise" />
+      <feFlood flood-color="rgb(128,128,128)" result="neutral" />
+      <feComposite operator="over" in="neutral" in2="edgeNoise" result="dispMap" />
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="dispMap"
+        scale="30"
+        xChannelSelector="R"
+        yChannelSelector="G"
+      />
+    </filter>
+  </defs>
+</svg>
+
+<!-- 场景背景 -->
+<div class="scene" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+  <div class="blob blob-5"></div>
 </div>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.157.0/build/three.module.js"
+<!-- 卡片展示 -->
+<main class="card-showcase">
+
+  <!-- ====== 1x1 卡片 ====== -->
+  <div class="glass-card size-1x1" data-tilt>
+    <div class="lens-layer" style="filter: url(#liquid-lens)"></div>
+    <div class="glass-body"></div>
+    <div class="prismatic-edge"></div>
+    <div class="chromatic-edge"></div>
+    <div class="specular"></div>
+    <div class="caustics"></div>
+    <div class="refraction-band"></div>
+    <div class="card-content">
+      <div>
+        <div class="card-icon">&#9728;</div>
+        <div class="card-label">Temperature</div>
+      </div>
+      <div>
+        <div class="card-value">26<span class="unit">°C</span></div>
+        <div class="card-desc">Partly cloudy</div>
+      </div>
+    </div>
+    <span class="format-label">1 x 1</span>
+  </div>
+
+  <!-- ====== 2x2 卡片 ====== -->
+  <div class="glass-card size-2x2" data-tilt>
+    <div class="lens-layer" style="filter: url(#liquid-lens-lg)"></div>
+    <div class="glass-body"></div>
+    <div class="prismatic-edge"></div>
+    <div class="chromatic-edge"></div>
+    <div class="specular"></div>
+    <div class="caustics"></div>
+    <div class="refraction-band"></div>
+    <div class="card-content">
+      <div>
+        <div class="card-icon">&#9835;</div>
+        <div class="card-label">Now Playing</div>
+        <div class="card-title">Liquid Dreams</div>
+        <div class="card-desc">Glass Frequencies &mdash; 2026</div>
+      </div>
+      <div>
+        <div class="card-value">4:32</div>
+        <div class="card-desc" style="margin-top:8px">Track 3 of 8</div>
+      </div>
+    </div>
+    <span class="format-label">2 x 2</span>
+  </div>
+
+  <!-- ====== 4x2 卡片 ====== -->
+  <div class="glass-card size-4x2" data-tilt>
+    <div class="lens-layer" style="filter: url(#liquid-lens)"></div>
+    <div class="glass-body"></div>
+    <div class="prismatic-edge"></div>
+    <div class="chromatic-edge"></div>
+    <div class="specular"></div>
+    <div class="caustics"></div>
+    <div class="refraction-band"></div>
+    <div class="card-content">
+      <div class="card-info">
+        <div class="card-icon">&#9677;</div>
+        <div class="card-label">System Status</div>
+        <div class="card-title" style="font-size:20px">All Services Operational</div>
+        <div class="card-desc">Uptime: 99.97% &middot; Latency: 12ms</div>
+      </div>
+      <div class="card-visual" id="bar-chart">
+        <!-- JS 动态生成柱状图 -->
+      </div>
+    </div>
+    <span class="format-label">4 x 2</span>
+  </div>
+
+</main>
+
+<script>
+/**
+ * 液态玻璃卡片交互
+ *
+ * 功能：
+ * 1. 鼠标追踪高光反射
+ * 2. 3D 倾斜效果
+ * 3. 点击涟漪
+ * 4. 4x2 卡片动态柱状图
+ */
+
+(function () {
+  'use strict';
+
+  /* ---- 鼠标追踪高光 + 3D 倾斜 ---- */
+  const cards = document.querySelectorAll('[data-tilt]');
+
+  cards.forEach((card) => {
+    const specular = card.querySelector('.specular');
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      // 高光位置
+      const specX = ((x / rect.width) * 100 - 50) * -2;
+      const specY = ((y / rect.height) * 100 - 50) * -2;
+      specular.style.setProperty('--spec-x', `${specX - 80}%`);
+      specular.style.setProperty('--spec-y', `${specY - 80}%`);
+
+      // 3D 倾斜
+      const rotateY = ((x - centerX) / centerX) * 6;
+      const rotateX = ((centerY - y) / centerY) * 6;
+      card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
+      specular.style.setProperty('--spec-x', '-80%');
+      specular.style.setProperty('--spec-y', '-80%');
+    });
+
+    // 点击涟漪
+    card.addEventListener('click', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple';
+      ripple.style.left = `${x - 25}px`;
+      ripple.style.top = `${y - 25}px`;
+      ripple.style.width = '50px';
+      ripple.style.height = '50px';
+      card.querySelector('.glass-body').appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
+  });
+
+  /* ---- 4x2 卡片柱状图 ---- */
+  const barChart = document.getElementById('bar-chart');
+  if (barChart) {
+    const heights = [28, 45, 36, 58, 42, 65, 50, 38, 55, 48, 60, 40];
+    heights.forEach((h, i) => {
+      const bar = document.createElement('div');
+      bar.className = 'bar' + (i >= heights.length - 3 ? ' active' : '');
+      bar.style.height = `${h}px`;
+      barChart.appendChild(bar);
+    });
+
+    // 缓慢动态变化
+    setInterval(() => {
+      const bars = barChart.querySelectorAll('.bar');
+      bars.forEach((bar) => {
+        const current = parseInt(bar.style.height, 10);
+        const delta = Math.round((Math.random() - 0.5) * 8);
+        const next = Math.max(16, Math.min(70, current + delta));
+        bar.style.height = `${next}px`;
+      });
+    }, 2000);
   }
-}
+
+})();
 </script>
 
-<script type="module">
-import * as THREE from 'three';
-
-/* ============================================================
-   液态玻璃卡片 — Three.js 实现
-   参考 React Bits / MeshTransmissionMaterial 渲染管线：
-   1. 背景场景渲染到 FBO
-   2. 全屏四边形显示 FBO 纹理
-   3. 玻璃网格使用自定义透射着色器采样 FBO
-   ============================================================ */
-
-// ── DOM ────────────────────────────────────────────────────
-const controlsEl = document.getElementById('controls');
-const buttons = controlsEl.querySelectorAll('.control-btn');
-
-// ── 状态 ──────────────────────────────────────────────────
-let currentMode = 'lens';
-const mouse = new THREE.Vector2(0, 0);
-const targetMouse = new THREE.Vector2(0, 0);
-
-// ── 渲染器 ────────────────────────────────────────────────
-const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000, 0);
-document.body.appendChild(renderer.domElement);
-
-// ── 相机 ──────────────────────────────────────────────────
-const camera = new THREE.PerspectiveCamera(
-  18,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  100
-);
-camera.position.set(0, 0, 20);
-camera.lookAt(0, 0, 15);
-
-// 正交相机（用于全屏四边形）
-const orthoCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-// ── 场景 ──────────────────────────────────────────────────
-const bgScene = new THREE.Scene();
-const mainScene = new THREE.Scene();
-const quadScene = new THREE.Scene();
-
-// ── FBO ───────────────────────────────────────────────────
-const fbo = new THREE.WebGLRenderTarget(
-  window.innerWidth * 2,
-  window.innerHeight * 2,
-  {
-    minFilter: THREE.LinearFilter,
-    magFilter: THREE.LinearFilter,
-    colorSpace: THREE.SRGBColorSpace,
-  }
-);
-
-// ── 全屏四边形 ────────────────────────────────────────────
-const quadMat = new THREE.MeshBasicMaterial({
-  map: fbo.texture,
-  transparent: true,
-  depthWrite: false,
-  depthTest: false,
-});
-const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), quadMat);
-quad.renderOrder = 0;
-quadScene.add(quad);
-
-// ═══════════════════════════════════════════════════════════
-//  背景场景
-// ═══════════════════════════════════════════════════════════
-
-// 环境光
-bgScene.add(new THREE.AmbientLight(0xffffff, 0.4));
-
-// 点光源
-const light1 = new THREE.PointLight('#6366f1', 80, 30);
-light1.position.set(-5, 3, 5);
-bgScene.add(light1);
-
-const light2 = new THREE.PointLight('#ec4899', 60, 30);
-light2.position.set(5, -2, 8);
-bgScene.add(light2);
-
-const light3 = new THREE.PointLight('#06b6d4', 50, 25);
-light3.position.set(0, 4, 10);
-bgScene.add(light3);
-
-// 球形装饰
-const sphereColors = [
-  '#6366f1', '#ec4899', '#06b6d4', '#f59e0b',
-  '#10b981', '#8b5cf6', '#f43f5e', '#14b8a6',
-  '#e879f9', '#fb923c',
-];
-const spheres = [];
-const sphereData = [
-  { pos: [-5, 2, -2], r: 1.6 }, { pos: [4, 3, -1], r: 1.2 },
-  { pos: [-3, -3, 0], r: 1.8 }, { pos: [6, -2, -3], r: 1.0 },
-  { pos: [1, 5, -4], r: 1.4 },  { pos: [-6, -1, -5], r: 1.3 },
-  { pos: [5, -4, 2], r: 1.5 },  { pos: [-4, 4, 3], r: 0.9 },
-  { pos: [0, -5, -2], r: 1.7 }, { pos: [7, 1, -6], r: 1.1 },
-];
-
-sphereData.forEach(({ pos, r }, i) => {
-  const geo = new THREE.SphereGeometry(r, 48, 48);
-  const mat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(sphereColors[i]),
-    roughness: 0.4,
-    metalness: 0.1,
-    transparent: true,
-    opacity: 0.55,
-  });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(...pos);
-  mesh.userData = {
-    basePos: mesh.position.clone(),
-    speed: 0.3 + Math.random() * 0.6,
-    amp: 0.3 + Math.random() * 1.0,
-    phase: Math.random() * Math.PI * 2,
-  };
-  bgScene.add(mesh);
-  spheres.push(mesh);
-});
-
-// 背景粒子
-const particlesGeo = new THREE.BufferGeometry();
-const particlesCount = 200;
-const particlesPos = new Float32Array(particlesCount * 3);
-const particlesSizes = new Float32Array(particlesCount);
-for (let i = 0; i < particlesCount; i++) {
-  particlesPos[i * 3] = (Math.random() - 0.5) * 20;
-  particlesPos[i * 3 + 1] = (Math.random() - 0.5) * 14;
-  particlesPos[i * 3 + 2] = (Math.random() - 0.5) * 10 - 5;
-  particlesSizes[i] = Math.random() * 0.08 + 0.02;
-}
-particlesGeo.setAttribute('position', new THREE.BufferAttribute(particlesPos, 3));
-particlesGeo.setAttribute('size', new THREE.BufferAttribute(particlesSizes, 1));
-
-const particlesMat = new THREE.PointsMaterial({
-  color: 0xffffff,
-  size: 0.04,
-  transparent: true,
-  opacity: 0.3,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false,
-});
-const particles = new THREE.Points(particlesGeo, particlesMat);
-bgScene.add(particles);
-
-// ═══════════════════════════════════════════════════════════
-//  自定义透射着色器 (MeshTransmissionMaterial 近似)
-// ═══════════════════════════════════════════════════════════
-
-const transmissionVertex = /* glsl */ `
-  varying vec3 vWorldPos;
-  varying vec3 vWorldNormal;
-  varying vec4 vScreenPos;
-
-  void main() {
-    vec4 worldPos = modelMatrix * vec4(position, 1.0);
-    vWorldPos = worldPos.xyz;
-    vWorldNormal = normalize(mat3(modelMatrix) * normal);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    vScreenPos = gl_Position;
-  }
-`;
-
-const transmissionFragment = /* glsl */ `
-  uniform sampler2D uBuffer;
-  uniform float uIor;
-  uniform float uThickness;
-  uniform float uChromaticAberration;
-  uniform float uAnisotropy;
-  uniform vec3 uAttenuationColor;
-  uniform float uAttenuationDistance;
-  uniform float uTime;
-
-  varying vec3 vWorldPos;
-  varying vec3 vWorldNormal;
-  varying vec4 vScreenPos;
-
-  void main() {
-    // 屏幕空间 UV
-    vec2 screenUV = (vScreenPos.xy / vScreenPos.w) * 0.5 + 0.5;
-
-    // 视线方向
-    vec3 V = normalize(cameraPosition - vWorldPos);
-    vec3 N = normalize(vWorldNormal);
-    if (!gl_FrontFacing) N = -N;
-
-    // ── 菲涅尔 ──
-    float fresnel = pow(1.0 - abs(dot(N, V)), 3.0);
-    // 玻璃 F0 ≈ 0.04
-    fresnel = mix(0.04, 1.0, fresnel);
-
-    // ── 折射 ──
-    float eta = 1.0 / uIor;
-    vec3 refractDir = refract(-V, N, eta);
-
-    // 折射偏移 (屏幕空间)
-    // 使用微妙的缩放，增强边缘扭曲
-    float distortScale = 0.055 * (1.0 + fresnel * 2.5);
-    vec2 refractUV = screenUV + refractDir.xy * distortScale;
-
-    // ── 各向异性拉伸 ──
-    vec3 H = normalize(-V + refractDir);
-    float aniso = uAnisotropy * (1.0 - abs(dot(H, N)));
-    vec2 stretch = N.xy * aniso * 0.01;
-    refractUV += stretch;
-
-    // ── 色差（RGB 分离，边缘增强） ──
-    float ca = uChromaticAberration * fresnel * 0.02;
-    vec2 caR = vec2(ca * 1.2, ca * 0.6);
-    vec2 caG = vec2(-ca * 0.3, -ca * 0.3);
-    vec2 caB = vec2(-ca * 0.4, -ca * 1.2);
-
-    float r = texture2D(uBuffer, refractUV + caR).r;
-    float g = texture2D(uBuffer, refractUV + caG).g;
-    float b = texture2D(uBuffer, refractUV + caB).b;
-
-    vec3 baseColor = vec3(r, g, b);
-
-    // ── 厚度衰减（Beer 定律） ──
-    float absorption = exp(-uThickness * uAttenuationDistance * 0.06);
-    // 中心透过率高，边缘透过率低
-    float thickFactor = mix(absorption, 1.0, fresnel * 0.5);
-    baseColor *= thickFactor;
-
-    // ── 衰减色混合 ──
-    baseColor = mix(baseColor, uAttenuationColor, (1.0 - thickFactor) * 0.4);
-
-    // ── 边缘高光 ──
-    vec3 specular = fresnel * 0.3 * vec3(1.0, 0.97, 0.92);
-    baseColor += specular;
-
-    // ── 细微的时间变化（液态感） ──
-    float liquidShift = sin(screenUV.x * 20.0 + uTime * 0.4) * cos(screenUV.y * 15.0 - uTime * 0.3) * 0.015;
-    baseColor += liquidShift * fresnel;
-
-    // ── 最终 alpha ──
-    float alpha = 0.72 + fresnel * 0.28;
-
-    gl_FragColor = vec4(baseColor, alpha);
-  }
-`;
-
-// ── 透射材质工厂 ──────────────────────────────────────────
-function createTransmissionMaterial(overrides = {}) {
-  return new THREE.ShaderMaterial({
-    uniforms: {
-      uBuffer: { value: fbo.texture },
-      uIor: { value: overrides.ior ?? 1.15 },
-      uThickness: { value: overrides.thickness ?? 5 },
-      uChromaticAberration: { value: overrides.chromaticAberration ?? 0.5 },
-      uAnisotropy: { value: overrides.anisotropy ?? 0.01 },
-      uAttenuationColor: { value: new THREE.Color(overrides.attenuationColor ?? '#ffffff') },
-      uAttenuationDistance: { value: overrides.attenuationDistance ?? 0.25 },
-      uTime: { value: 0 },
-    },
-    vertexShader: transmissionVertex,
-    fragmentShader: transmissionFragment,
-    transparent: true,
-    depthWrite: true,
-    depthTest: true,
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-//  玻璃网格
-// ═══════════════════════════════════════════════════════════
-
-const glassMeshes = {};
-
-function createLensMesh() {
-  // 圆柱体 → 俯视即透镜圆盘
-  const geo = new THREE.CylinderGeometry(0.55, 0.55, 0.08, 96, 4);
-  const mat = createTransmissionMaterial({
-    ior: 1.15,
-    thickness: 4,
-    chromaticAberration: 0.5,
-    anisotropy: 0.02,
-  });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.rotation.x = Math.PI / 2;
-  mesh.position.set(0, 0, 15);
-  mesh.renderOrder = 1;
-  mesh.userData = { mode: 'lens', scale: 1 };
-  return mesh;
-}
-
-function createCubeMesh() {
-  // 圆角立方体效果：高分段数使法线平滑
-  const geo = new THREE.BoxGeometry(0.9, 0.9, 0.9, 32, 32, 32);
-  const mat = createTransmissionMaterial({
-    ior: 1.12,
-    thickness: 6,
-    chromaticAberration: 0.6,
-    anisotropy: 0.03,
-  });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(0, 0, 15);
-  mesh.renderOrder = 1;
-  mesh.userData = { mode: 'cube', scale: 1 };
-  return mesh;
-}
-
-function createBarMesh() {
-  const geo = new THREE.BoxGeometry(2.2, 0.55, 0.14, 64, 24, 4);
-  const mat = createTransmissionMaterial({
-    ior: 1.18,
-    thickness: 8,
-    chromaticAberration: 0.45,
-    anisotropy: 0.005,
-  });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(0, 0, 15);
-  mesh.renderOrder = 1;
-  mesh.userData = { mode: 'bar', scale: 1 };
-  return mesh;
-}
-
-// 预创建所有模式网格
-glassMeshes.lens = createLensMesh();
-glassMeshes.cube = createCubeMesh();
-glassMeshes.bar = createBarMesh();
-
-// 当前活跃玻璃
-let activeGlass = glassMeshes[currentMode];
-mainScene.add(activeGlass);
-
-// ═══════════════════════════════════════════════════════════
-//  事件监听
-// ═══════════════════════════════════════════════════════════
-
-// 鼠标追踪
-window.addEventListener('mousemove', (e) => {
-  targetMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  targetMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-});
-
-// 触摸追踪
-window.addEventListener('touchmove', (e) => {
-  if (e.touches.length) {
-    targetMouse.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
-    targetMouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
-  }
-}, { passive: true });
-
-// 模式切换
-controlsEl.addEventListener('click', (e) => {
-  const btn = e.target.closest('.control-btn');
-  if (!btn) return;
-
-  const mode = btn.dataset.mode;
-  if (mode === currentMode) return;
-
-  currentMode = mode;
-
-  // 移除旧玻璃
-  mainScene.remove(activeGlass);
-
-  // 添加新玻璃
-  activeGlass = glassMeshes[mode];
-  mainScene.add(activeGlass);
-
-  // 更新 UI
-  buttons.forEach((b) => b.classList.remove('active'));
-  btn.classList.add('active');
-});
-
-// 窗口大小
-window.addEventListener('resize', () => {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-
-  renderer.setSize(w, h);
-  fbo.setSize(w * 2, h * 2);
-});
-
-// ═══════════════════════════════════════════════════════════
-//  动画循环
-// ═══════════════════════════════════════════════════════════
-
-const clock = new THREE.Clock();
-const pt = new THREE.Vector3();
-const vt = new THREE.Vector3();
-
-function getViewportSizeAtZ(z) {
-  const dist = camera.position.z - z;
-  const vFovRad = THREE.MathUtils.degToRad(camera.fov);
-  const h = 2 * Math.tan(vFovRad / 2) * Math.abs(dist);
-  const w = h * camera.aspect;
-  return { width: w, height: h };
-}
-
-function animate(timestamp) {
-  requestAnimationFrame(animate);
-
-  const delta = Math.min(clock.getDelta(), 0.1);
-  const elapsed = timestamp * 0.001;
-
-  // ── 平滑鼠标跟随 ──
-  const lambda = 4;
-  const t = 1 - Math.exp(-lambda * delta);
-  mouse.lerp(targetMouse, t);
-
-  // ── 更新玻璃位置 ──
-  const vp = getViewportSizeAtZ(15);
-  const mode = currentMode;
-
-  if (mode === 'bar') {
-    // Bar 模式：锁定底部，仅水平跟随
-    const destX = (mouse.x * vp.width) / 2;
-    const destY = -vp.height / 2 + 0.35;
-    pt.set(destX, destY, 15);
-  } else {
-    // Lens / Cube：完全跟随鼠标
-    const destX = (mouse.x * vp.width) / 2;
-    const destY = (mouse.y * vp.height) / 2;
-    pt.set(destX, destY, 15);
-  }
-
-  vt.copy(pt).sub(activeGlass.position).multiplyScalar(t);
-  activeGlass.position.add(vt);
-
-  // ── 立方体微旋转（增加液态感） ──
-  if (mode === 'cube') {
-    activeGlass.rotation.y += vt.x * 0.5;
-    activeGlass.rotation.x += vt.y * -0.5;
-    activeGlass.rotation.y *= 0.92;
-    activeGlass.rotation.x *= 0.92;
-  }
-
-  // ── 更新着色器时间 ──
-  if (activeGlass.material.uniforms) {
-    activeGlass.material.uniforms.uTime.value = elapsed;
-  }
-
-  // ── 动画背景球体 ──
-  spheres.forEach((s) => {
-    const d = s.userData;
-    s.position.x = d.basePos.x + Math.sin(elapsed * d.speed + d.phase) * d.amp;
-    s.position.y = d.basePos.y + Math.cos(elapsed * d.speed * 0.7 + d.phase) * d.amp * 0.8;
-  });
-
-  // 动画粒子
-  particles.rotation.y += delta * 0.05;
-  particles.rotation.x += delta * 0.02;
-
-  // 动画灯光
-  light1.intensity = 60 + Math.sin(elapsed * 0.5) * 20;
-  light2.intensity = 50 + Math.cos(elapsed * 0.7) * 15;
-
-  // ── 渲染管线 ──
-  // 1. 背景场景 → FBO
-  renderer.setRenderTarget(fbo);
-  renderer.render(bgScene, camera);
-  renderer.setRenderTarget(null);
-
-  // 2. 全屏四边形（显示背景）
-  quadMat.map = fbo.texture;
-  quadMat.needsUpdate = true;
-  renderer.render(quadScene, orthoCam);
-
-  // 3. 玻璃网格覆盖在上面
-  renderer.autoClear = false;
-  renderer.render(mainScene, camera);
-  renderer.autoClear = true;
-}
-
-// ── 启动 ──
-requestAnimationFrame(animate);
-</script>
 </body>
 </html>
