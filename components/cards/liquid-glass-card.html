@@ -7,24 +7,28 @@
 <style>
   /* ============================================
      液态玻璃卡片 - Liquid Glass Card
-     熔融液态玻璃 · 凸透镜光学折射 · 全内反射边缘光
-     流动焦散 · 表面张力有机边缘 · 环境色渗透
+     边缘透镜效果 + 光线扭曲
      格式: 1x1 / 2x2 / 4x2
      ============================================ */
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
   :root {
-    /* 玻璃光学变量 */
-    --glass-tint: rgba(255, 255, 255, 0.025);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-blur: 1.5px;
-    --glass-saturate: 220%;
-    --glass-brightness: 108%;
-    --rim-brightness: 0.7;
-    --caustic-intensity: 0.18;
-    --distortion-k: 0.15;
-    --refraction-opacity: 0.04;
+    /* 玻璃材质变量 */
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-blur: 22px;
+    --glass-saturate: 180%;
+    --lens-scale: 25;
+    --lens-blur: 8px;
+    --edge-glow: rgba(255, 255, 255, 0.12);
+    --specular-opacity: 0.35;
+    --caustic-opacity: 0.06;
+    --chromatic-offset: 1.5px;
   }
 
   body {
@@ -32,13 +36,13 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: #08080f;
+    background: #0a0a12;
     font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     overflow-x: hidden;
     color: #fff;
   }
 
-  /* ========== 场景背景 ========== */
+  /* ---- 场景背景 ---- */
   .scene {
     position: fixed;
     inset: 0;
@@ -49,88 +53,107 @@
   .blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(90px);
-    opacity: 0.65;
+    filter: blur(80px);
+    opacity: 0.7;
     will-change: transform;
   }
 
   .blob-1 {
-    width: 520px; height: 520px;
-    background: radial-gradient(circle, #6366f1 0%, #4338ca 50%, transparent 70%);
-    top: -12%; left: -6%;
-    animation: d1 22s ease-in-out infinite;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, #6366f1 0%, #4f46e5 50%, transparent 70%);
+    top: -10%;
+    left: -5%;
+    animation: drift-1 20s ease-in-out infinite;
   }
+
   .blob-2 {
-    width: 460px; height: 460px;
+    width: 450px;
+    height: 450px;
     background: radial-gradient(circle, #ec4899 0%, #be185d 50%, transparent 70%);
-    top: 48%; right: -10%;
-    animation: d2 26s ease-in-out infinite;
+    top: 50%;
+    right: -8%;
+    animation: drift-2 25s ease-in-out infinite;
   }
+
   .blob-3 {
-    width: 420px; height: 420px;
-    background: radial-gradient(circle, #06b6d4 0%, #0e7490 50%, transparent 70%);
-    bottom: -8%; left: 28%;
-    animation: d3 24s ease-in-out infinite;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, #06b6d4 0%, #0891b2 50%, transparent 70%);
+    bottom: -5%;
+    left: 30%;
+    animation: drift-3 22s ease-in-out infinite;
   }
+
   .blob-4 {
-    width: 360px; height: 360px;
-    background: radial-gradient(circle, #f59e0b 0%, #b45309 50%, transparent 70%);
-    top: 18%; left: 52%;
-    animation: d4 19s ease-in-out infinite;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, #f59e0b 0%, #d97706 50%, transparent 70%);
+    top: 20%;
+    left: 55%;
+    animation: drift-4 18s ease-in-out infinite;
   }
+
   .blob-5 {
-    width: 320px; height: 320px;
-    background: radial-gradient(circle, #10b981 0%, #047857 50%, transparent 70%);
-    bottom: 18%; left: 8%;
-    animation: d5 28s ease-in-out infinite;
-  }
-  .blob-6 {
-    width: 280px; height: 280px;
-    background: radial-gradient(circle, #a855f7 0%, #7c3aed 50%, transparent 70%);
-    top: 60%; left: 35%;
-    animation: d6 21s ease-in-out infinite;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, #10b981 0%, #059669 50%, transparent 70%);
+    bottom: 20%;
+    left: 10%;
+    animation: drift-5 24s ease-in-out infinite;
   }
 
-  @keyframes d1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(90px,70px) scale(1.12)} 66%{transform:translate(-50px,35px) scale(.94)} }
-  @keyframes d2 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-80px,-55px) scale(1.06)} 66%{transform:translate(35px,-85px) scale(.88)} }
-  @keyframes d3 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(65px,-45px) scale(1.1)} 66%{transform:translate(-55px,25px) scale(.9)} }
-  @keyframes d4 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-55px,75px) scale(.93)} 66%{transform:translate(45px,-35px) scale(1.12)} }
-  @keyframes d5 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(75px,35px) scale(1.07)} 66%{transform:translate(-65px,-55px) scale(.96)} }
-  @keyframes d6 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-45px,65px) scale(1.08)} 66%{transform:translate(55px,-40px) scale(.92)} }
+  @keyframes drift-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(80px, 60px) scale(1.1); }
+    66% { transform: translate(-40px, 30px) scale(0.95); }
+  }
+  @keyframes drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-70px, -50px) scale(1.05); }
+    66% { transform: translate(30px, -80px) scale(0.9); }
+  }
+  @keyframes drift-3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(60px, -40px) scale(1.08); }
+    66% { transform: translate(-50px, 20px) scale(0.92); }
+  }
+  @keyframes drift-4 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-50px, 70px) scale(0.95); }
+    66% { transform: translate(40px, -30px) scale(1.1); }
+  }
+  @keyframes drift-5 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(70px, 30px) scale(1.05); }
+    66% { transform: translate(-60px, -50px) scale(0.98); }
+  }
 
-  /* ========== 卡片展示区 ========== */
+  /* ---- 卡片展示区 ---- */
   .card-showcase {
     position: relative;
     z-index: 1;
     display: flex;
     flex-wrap: wrap;
-    gap: 48px;
+    gap: 32px;
     justify-content: center;
     align-items: center;
-    padding: 80px 40px;
+    padding: 60px 40px;
     max-width: 1100px;
   }
 
-  /* ========== 玻璃卡片基础 ========== */
+  /* ---- 玻璃卡片基础 ---- */
   .glass-card {
     position: relative;
-    /* 表面张力有机圆角 — 非完美矩形 */
-    border-radius: 32px 28px 30px 34px / 30px 34px 28px 32px;
+    border-radius: 24px;
     cursor: default;
     transform-style: preserve-3d;
-    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     will-change: transform;
-    animation: surface-tension 8s ease-in-out infinite;
   }
 
-  .glass-card:hover { z-index: 10; }
-
-  /* 表面张力微动画 — 边缘轻微呼吸 */
-  @keyframes surface-tension {
-    0%,100% { border-radius: 32px 28px 30px 34px / 30px 34px 28px 32px; }
-    25%     { border-radius: 30px 32px 28px 32px / 32px 30px 34px 30px; }
-    50%     { border-radius: 28px 30px 34px 28px / 34px 28px 30px 34px; }
-    75%     { border-radius: 34px 30px 32px 30px / 28px 32px 32px 28px; }
+  .glass-card:hover {
+    z-index: 10;
   }
 
   /* 格式尺寸 */
@@ -138,153 +161,103 @@
   .size-2x2 { width: 420px; height: 420px; }
   .size-4x2 { width: 420px; height: 200px; }
 
-  /* ========== 透镜折射层 — 桶形畸变 ========== */
-  .lens-distort {
+  /* ---- 透镜扭曲层 ---- */
+  .lens-layer {
     position: absolute;
-    inset: -24px;
-    border-radius: 44px;
-    backdrop-filter: blur(1px) saturate(150%);
-    -webkit-backdrop-filter: blur(1px) saturate(150%);
+    inset: -12px;
+    border-radius: 32px;
+    backdrop-filter: blur(2px) saturate(120%);
+    -webkit-backdrop-filter: blur(2px) saturate(120%);
+    filter: url(#liquid-lens);
     z-index: 0;
     overflow: hidden;
-    /* 桶形畸变滤镜由 JS 动态注入 */
   }
 
-  /* ========== 玻璃主体 — 光学清晰 ========== */
+  /* ---- 玻璃主体 ---- */
   .glass-body {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    background: var(--glass-tint);
-    backdrop-filter:
-      blur(var(--glass-blur))
-      saturate(var(--glass-saturate))
-      brightness(var(--glass-brightness));
-    -webkit-backdrop-filter:
-      blur(var(--glass-blur))
-      saturate(var(--glass-saturate))
-      brightness(var(--glass-brightness));
+    border-radius: 24px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
     border: 1px solid var(--glass-border);
     z-index: 1;
     overflow: hidden;
-    /* 多层阴影：接触阴影 + 悬浮阴影 + 环境阴影 */
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.08),
-      inset 0 -1px 0 rgba(0,0,0,0.08),
-      0 1px 2px rgba(0,0,0,0.25),
-      0 4px 8px rgba(0,0,0,0.18),
-      0 12px 28px rgba(0,0,0,0.22),
-      0 28px 56px -8px rgba(0,0,0,0.3);
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
-  /* 凸透镜厚度渐变 — 中心薄边缘厚 */
-  .glass-body::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(
-      ellipse at center,
-      transparent 30%,
-      rgba(180, 200, 255, 0.015) 60%,
-      rgba(160, 190, 255, 0.035) 80%,
-      rgba(140, 180, 255, 0.05) 100%
-    );
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  /* 环境色渗透层 */
-  .glass-body::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: rgba(255,255,255,0.02);
-    mix-blend-mode: overlay;
-    z-index: 2;
-    pointer-events: none;
-  }
-
-  /* ========== 全内反射边缘光 — 薄亮白线 ========== */
-  .rim-light {
+  /* ---- 棱镜边缘（色散效果） ---- */
+  .prismatic-edge {
     position: absolute;
     inset: -1px;
-    border-radius: inherit;
-    z-index: 3;
+    border-radius: 25px;
+    z-index: 2;
     pointer-events: none;
     overflow: hidden;
   }
 
-  .rim-light::before {
+  .prismatic-edge::before {
     content: '';
     position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1.5px;
-    /* 角度依赖的亮度 — 模拟全内反射在不同角度的强度 */
+    inset: -2px;
+    border-radius: 26px;
+    padding: 2px;
     background: conic-gradient(
-      from 200deg,
-      rgba(255,255,255,0.02) 0deg,
-      rgba(255,255,255,0.55) 40deg,
-      rgba(255,255,255,0.08) 90deg,
-      rgba(255,255,255,0.35) 150deg,
-      rgba(255,255,255,0.02) 200deg,
-      rgba(255,255,255,0.45) 260deg,
-      rgba(255,255,255,0.06) 310deg,
-      rgba(255,255,255,0.02) 360deg
+      from var(--prism-angle, 0deg),
+      rgba(255, 0, 0, 0.0) 0%,
+      rgba(255, 60, 60, 0.25) 8%,
+      rgba(255, 180, 0, 0.2) 16%,
+      rgba(255, 255, 0, 0.15) 24%,
+      rgba(60, 255, 60, 0.2) 32%,
+      rgba(0, 200, 255, 0.25) 40%,
+      rgba(80, 80, 255, 0.2) 48%,
+      rgba(180, 0, 255, 0.25) 56%,
+      rgba(255, 0, 180, 0.2) 64%,
+      rgba(255, 0, 0, 0.0) 72%,
+      transparent 72%
     );
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    animation: rim-shift 10s linear infinite;
+    opacity: 0.6;
+    animation: prism-rotate 8s linear infinite;
   }
 
-  @property --rim-angle {
+  @keyframes prism-rotate {
+    to { --prism-angle: 360deg; }
+  }
+
+  @property --prism-angle {
     syntax: '<angle>';
     initial-value: 0deg;
     inherits: false;
   }
 
-  @keyframes rim-shift {
-    to { --rim-angle: 360deg; }
-  }
-
-  /* 边缘光外发光 */
-  .rim-light::after {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: inherit;
-    border: 1px solid rgba(255,255,255,0.04);
-    box-shadow:
-      0 0 8px rgba(255,255,255,0.03),
-      0 0 20px rgba(255,255,255,0.015);
-    pointer-events: none;
-  }
-
-  /* ========== 色散边缘 — Chromatic Aberration ========== */
+  /* ---- 色差边缘（chromatic aberration） ---- */
   .chromatic-edge {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    z-index: 4;
+    border-radius: 24px;
+    z-index: 3;
     pointer-events: none;
     box-shadow:
-      inset 1.5px 0 0 rgba(255, 100, 100, 0.08),
-      inset -1.5px 0 0 rgba(100, 100, 255, 0.08),
-      inset 0 1px 0 rgba(100, 255, 150, 0.06),
-      inset 0 -1px 0 rgba(255, 100, 255, 0.06);
+      inset 1px 0 0 rgba(255, 80, 80, 0.12),
+      inset -1px 0 0 rgba(80, 80, 255, 0.12),
+      inset 0 1px 0 rgba(80, 255, 80, 0.08),
+      inset 0 -1px 0 rgba(255, 80, 255, 0.08);
   }
 
-  /* ========== 高光反射 — 鼠标追踪 ========== */
+  /* ---- 高光反射 ---- */
   .specular {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    z-index: 5;
+    border-radius: 24px;
+    z-index: 4;
     pointer-events: none;
     overflow: hidden;
   }
@@ -292,128 +265,57 @@
   .specular::before {
     content: '';
     position: absolute;
-    width: 250%;
-    height: 250%;
-    top: var(--spec-y, -90%);
-    left: var(--spec-x, -90%);
+    width: 200%;
+    height: 200%;
+    top: var(--spec-y, -80%);
+    left: var(--spec-x, -80%);
     background: radial-gradient(
-      ellipse 40% 35% at center,
-      rgba(255,255,255,0.28) 0%,
-      rgba(255,255,255,0.06) 40%,
-      transparent 70%
+      ellipse at center,
+      rgba(255, 255, 255, var(--specular-opacity)) 0%,
+      rgba(255, 255, 255, 0.08) 30%,
+      transparent 60%
     );
-    transition: top 0.25s ease-out, left 0.25s ease-out;
+    transition: top 0.3s ease-out, left 0.3s ease-out;
     mix-blend-mode: overlay;
   }
 
-  /* ========== 流动焦散线 — 细长弯曲高光 ========== */
+  /* ---- 焦散光纹 ---- */
   .caustics {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    z-index: 6;
+    border-radius: 24px;
+    z-index: 5;
     pointer-events: none;
     overflow: hidden;
+    opacity: var(--caustic-opacity);
   }
 
-  .caustic-line {
+  .caustics::before {
+    content: '';
     position: absolute;
-    height: 2px;
-    border-radius: 50%;
+    inset: -50%;
+    background:
+      radial-gradient(ellipse 80px 60px at 30% 25%, rgba(255,255,255,0.5) 0%, transparent 70%),
+      radial-gradient(ellipse 60px 90px at 70% 60%, rgba(255,255,255,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 50px 50px at 50% 80%, rgba(255,255,255,0.3) 0%, transparent 70%),
+      radial-gradient(ellipse 70px 40px at 20% 70%, rgba(255,255,255,0.35) 0%, transparent 70%);
+    animation: caustic-drift 12s ease-in-out infinite;
     mix-blend-mode: overlay;
-    pointer-events: none;
-    opacity: 0;
-    will-change: transform, opacity;
   }
 
-  .caustic-line.c1 {
-    width: 180%;
-    top: 28%;
-    left: -40%;
-    background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255,255,255,0.08) 15%,
-      rgba(255,255,255,0.35) 40%,
-      rgba(255,255,255,0.12) 60%,
-      transparent 85%
-    );
-    transform: rotate(-6deg);
-    animation: caustic-flow-1 9s ease-in-out infinite;
+  @keyframes caustic-drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    25% { transform: translate(15px, -10px) rotate(3deg) scale(1.05); }
+    50% { transform: translate(-10px, 15px) rotate(-2deg) scale(0.98); }
+    75% { transform: translate(8px, 8px) rotate(1deg) scale(1.02); }
   }
 
-  .caustic-line.c2 {
-    width: 160%;
-    top: 55%;
-    left: -30%;
-    height: 1.5px;
-    background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255,255,255,0.06) 20%,
-      rgba(255,255,255,0.25) 50%,
-      rgba(255,255,255,0.08) 75%,
-      transparent 100%
-    );
-    transform: rotate(4deg);
-    animation: caustic-flow-2 12s ease-in-out infinite 2s;
-  }
-
-  .caustic-line.c3 {
-    width: 140%;
-    top: 72%;
-    left: -20%;
-    height: 1px;
-    background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255,255,255,0.1) 30%,
-      rgba(255,255,255,0.2) 55%,
-      transparent 80%
-    );
-    transform: rotate(-3deg);
-    animation: caustic-flow-3 15s ease-in-out infinite 4s;
-  }
-
-  .caustic-line.c4 {
-    width: 120%;
-    top: 18%;
-    left: -10%;
-    height: 2.5px;
-    background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255,255,255,0.05) 25%,
-      rgba(255,255,255,0.4) 48%,
-      rgba(255,255,255,0.05) 70%,
-      transparent 100%
-    );
-    transform: rotate(-10deg);
-    animation: caustic-flow-4 11s ease-in-out infinite 1s;
-  }
-
-  @keyframes caustic-flow-1 {
-    0%,100% { transform: rotate(-6deg) translateX(-15%); opacity: 0.5; }
-    30%     { transform: rotate(-4deg) translateX(10%);  opacity: 0.8; }
-    60%     { transform: rotate(-7deg) translateX(5%);   opacity: 0.3; }
-  }
-  @keyframes caustic-flow-2 {
-    0%,100% { transform: rotate(4deg) translateX(10%);  opacity: 0.4; }
-    40%     { transform: rotate(2deg) translateX(-12%); opacity: 0.7; }
-    70%     { transform: rotate(5deg) translateX(-5%);  opacity: 0.2; }
-  }
-  @keyframes caustic-flow-3 {
-    0%,100% { transform: rotate(-3deg) translateX(5%);  opacity: 0.3; }
-    50%     { transform: rotate(-1deg) translateX(-10%); opacity: 0.6; }
-  }
-  @keyframes caustic-flow-4 {
-    0%,100% { transform: rotate(-10deg) translateX(-8%); opacity: 0.4; }
-    35%     { transform: rotate(-7deg) translateX(12%);  opacity: 0.9; }
-    65%     { transform: rotate(-11deg) translateX(3%);  opacity: 0.2; }
-  }
-
-  /* ========== 内部折射光带 ========== */
+  /* ---- 内部折射光带 ---- */
   .refraction-band {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    z-index: 7;
+    border-radius: 24px;
+    z-index: 6;
     pointer-events: none;
     overflow: hidden;
   }
@@ -424,50 +326,51 @@
     top: -100%;
     left: -50%;
     width: 200%;
-    height: 35%;
-    background: linear-gradient(180deg,
+    height: 40%;
+    background: linear-gradient(
+      180deg,
       transparent 0%,
-      rgba(255,255,255,0.02) 30%,
-      rgba(255,255,255,0.05) 50%,
-      rgba(255,255,255,0.02) 70%,
+      rgba(255, 255, 255, 0.03) 30%,
+      rgba(255, 255, 255, 0.06) 50%,
+      rgba(255, 255, 255, 0.03) 70%,
       transparent 100%
     );
-    transform: rotate(-12deg);
-    animation: refr-sweep 7s ease-in-out infinite;
+    transform: rotate(-15deg);
+    animation: refraction-sweep 6s ease-in-out infinite;
   }
 
-  @keyframes refr-sweep {
-    0%,100% { top: -35%; opacity: 0.5; }
-    50%     { top: 105%; opacity: 0.2; }
+  @keyframes refraction-sweep {
+    0%, 100% { top: -40%; opacity: 0.6; }
+    50% { top: 100%; opacity: 0.3; }
   }
 
-  /* ========== 液态呼吸 — 浮动深度 ========== */
+  /* ---- 液态呼吸动画 ---- */
   .glass-card::after {
     content: '';
     position: absolute;
-    inset: -4px;
-    border-radius: inherit;
+    inset: -2px;
+    border-radius: 26px;
     z-index: -1;
     background: transparent;
-    box-shadow: 0 0 30px rgba(255,255,255,0.02);
-    animation: liquid-breathe 5s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+    animation: liquid-breathe 4s ease-in-out infinite;
   }
 
   @keyframes liquid-breathe {
-    0%,100% {
-      box-shadow: 0 0 25px rgba(255,255,255,0.02);
-      transform: translateY(0);
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+      border-radius: 26px;
     }
     50% {
-      box-shadow: 0 0 45px rgba(255,255,255,0.04);
-      transform: translateY(-2px);
+      box-shadow: 0 0 35px rgba(255, 255, 255, 0.06);
+      border-radius: 28px;
     }
   }
 
-  /* ========== 卡片内容 ========== */
+  /* ---- 卡片内容 ---- */
   .card-content {
     position: relative;
-    z-index: 8;
+    z-index: 7;
     padding: 24px;
     height: 100%;
     display: flex;
@@ -476,103 +379,119 @@
   }
 
   .card-label {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.4);
-    margin-bottom: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
   }
 
   .card-title {
-    font-size: 17px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.9);
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
     line-height: 1.3;
     letter-spacing: -0.02em;
   }
 
   .card-value {
-    font-size: 40px;
+    font-size: 42px;
     font-weight: 200;
     color: #fff;
     line-height: 1;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.03em;
   }
 
   .card-value .unit {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 400;
-    color: rgba(255,255,255,0.4);
-    margin-left: 2px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: 4px;
   }
 
   .card-desc {
-    font-size: 12px;
-    color: rgba(255,255,255,0.35);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.45);
     line-height: 1.5;
   }
 
   .card-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    margin-bottom: 10px;
+    font-size: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    margin-bottom: 12px;
   }
 
-  /* ---- 2x2 卡片 ---- */
-  .size-2x2 .card-content { padding: 32px; }
-  .size-2x2 .card-title { font-size: 22px; }
-  .size-2x2 .card-value { font-size: 60px; }
+  /* ---- 2x2 卡片内容 ---- */
+  .size-2x2 .card-content {
+    padding: 32px;
+  }
+
+  .size-2x2 .card-title {
+    font-size: 24px;
+  }
+
+  .size-2x2 .card-value {
+    font-size: 64px;
+  }
+
   .size-2x2 .card-icon {
-    width: 44px; height: 44px;
-    font-size: 22px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    border-radius: 14px;
   }
-  .size-2x2 .caustic-line.c1 { width: 160%; top: 25%; }
-  .size-2x2 .caustic-line.c4 { width: 130%; top: 15%; height: 3px; }
 
-  /* ---- 4x2 卡片 ---- */
+  /* ---- 4x2 卡片内容 ---- */
   .size-4x2 .card-content {
-    padding: 24px 28px;
+    padding: 28px 32px;
     flex-direction: row;
     align-items: center;
-    gap: 28px;
+    gap: 32px;
   }
-  .size-4x2 .card-info { flex: 1; min-width: 0; }
+
+  .size-4x2 .card-info {
+    flex: 1;
+    min-width: 0;
+  }
+
   .size-4x2 .card-visual {
     flex-shrink: 0;
     display: flex;
-    align-items: flex-end;
-    gap: 5px;
-    height: 60px;
+    align-items: center;
+    gap: 6px;
   }
+
   .size-4x2 .bar {
     width: 4px;
     border-radius: 2px;
-    background: rgba(255,255,255,0.12);
-    transition: height 0.6s cubic-bezier(0.175,0.885,0.32,1.275);
+    background: rgba(255, 255, 255, 0.15);
+    transition: height 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
-  .size-4x2 .bar.active { background: rgba(255,255,255,0.45); }
 
-  /* ---- 格式标签 ---- */
+  .size-4x2 .bar.active {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* ---- 标签区 ---- */
   .format-label {
     position: absolute;
-    bottom: -30px;
+    bottom: -28px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 500;
-    color: rgba(255,255,255,0.2);
-    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.05em;
     white-space: nowrap;
   }
 
@@ -580,23 +499,29 @@
   .ripple {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
     transform: scale(0);
-    animation: ripple-out 0.7s ease-out forwards;
+    animation: ripple-expand 0.6s ease-out forwards;
     pointer-events: none;
-    z-index: 9;
+    z-index: 8;
   }
 
-  @keyframes ripple-out {
-    to { transform: scale(4); opacity: 0; }
+  @keyframes ripple-expand {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
   }
 
   /* ---- 响应式 ---- */
   @media (max-width: 768px) {
-    .card-showcase { padding: 50px 20px; gap: 44px; }
+    .card-showcase {
+      padding: 40px 20px;
+      gap: 40px;
+    }
     .size-2x2 { width: 320px; height: 320px; }
     .size-4x2 { width: 320px; height: 160px; }
-    .size-2x2 .card-value { font-size: 44px; }
+    .size-2x2 .card-value { font-size: 48px; }
   }
 
   /* ---- 减少动效偏好 ---- */
@@ -606,7 +531,9 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
-    .lens-distort { filter: none !important; }
+    .lens-layer {
+      filter: none !important;
+    }
   }
 </style>
 </head>
@@ -615,16 +542,65 @@
 <!-- SVG 滤镜定义 -->
 <svg class="svg-defs" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
   <defs>
-    <!-- 边缘有机噪声扭曲 -->
-    <filter id="edge-warp" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" seed="5" result="noise"/>
-      <feMorphology operator="dilate" radius="20" in="SourceAlpha" result="expanded"/>
-      <feComposite operator="out" in="expanded" in2="SourceAlpha" result="ring"/>
-      <feGaussianBlur in="ring" stdDeviation="8" result="softRing"/>
-      <feComposite operator="in" in="noise" in2="softRing" result="edgeNoise"/>
-      <feFlood flood-color="rgb(128,128,128)" result="neutral"/>
-      <feComposite operator="over" in="neutral" in2="edgeNoise" result="dispMap"/>
-      <feDisplacementMap in="SourceGraphic" in2="dispMap" scale="18" xChannelSelector="R" yChannelSelector="G"/>
+    <!-- 液态透镜扭曲滤镜 -->
+    <filter id="liquid-lens" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <!-- 生成有机噪声纹理 -->
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="0.012"
+        numOctaves="3"
+        seed="3"
+        result="noise"
+      />
+
+      <!-- 构建边缘蒙版：膨胀源形状 → 减去原始 → 得到外环 -->
+      <feMorphology operator="dilate" radius="22" in="SourceAlpha" result="expanded" />
+      <feComposite operator="out" in="expanded" in2="SourceAlpha" result="outerRing" />
+
+      <!-- 柔化边缘蒙版 -->
+      <feGaussianBlur in="outerRing" stdDeviation="10" result="softEdge" />
+
+      <!-- 仅在边缘区域应用噪声 -->
+      <feComposite operator="in" in="noise" in2="softEdge" result="edgeNoise" />
+
+      <!-- 中性基底（无位移） -->
+      <feFlood flood-color="rgb(128,128,128)" result="neutral" />
+
+      <!-- 合成位移贴图：中性中心 + 噪声边缘 -->
+      <feComposite operator="over" in="neutral" in2="edgeNoise" result="dispMap" />
+
+      <!-- 应用位移映射 -->
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="dispMap"
+        scale="25"
+        xChannelSelector="R"
+        yChannelSelector="G"
+      />
+    </filter>
+
+    <!-- 增强版透镜扭曲（用于 2x2 大卡片） -->
+    <filter id="liquid-lens-lg" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="0.008"
+        numOctaves="4"
+        seed="7"
+        result="noise"
+      />
+      <feMorphology operator="dilate" radius="30" in="SourceAlpha" result="expanded" />
+      <feComposite operator="out" in="expanded" in2="SourceAlpha" result="outerRing" />
+      <feGaussianBlur in="outerRing" stdDeviation="14" result="softEdge" />
+      <feComposite operator="in" in="noise" in2="softEdge" result="edgeNoise" />
+      <feFlood flood-color="rgb(128,128,128)" result="neutral" />
+      <feComposite operator="over" in="neutral" in2="edgeNoise" result="dispMap" />
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="dispMap"
+        scale="30"
+        xChannelSelector="R"
+        yChannelSelector="G"
+      />
     </filter>
   </defs>
 </svg>
@@ -636,25 +612,19 @@
   <div class="blob blob-3"></div>
   <div class="blob blob-4"></div>
   <div class="blob blob-5"></div>
-  <div class="blob blob-6"></div>
 </div>
 
 <!-- 卡片展示 -->
 <main class="card-showcase">
 
   <!-- ====== 1x1 卡片 ====== -->
-  <div class="glass-card size-1x1" data-tilt data-lens-k="0.18">
-    <div class="lens-distort"></div>
+  <div class="glass-card size-1x1" data-tilt>
+    <div class="lens-layer" style="filter: url(#liquid-lens)"></div>
     <div class="glass-body"></div>
-    <div class="rim-light"></div>
+    <div class="prismatic-edge"></div>
     <div class="chromatic-edge"></div>
     <div class="specular"></div>
-    <div class="caustics">
-      <div class="caustic-line c1"></div>
-      <div class="caustic-line c2"></div>
-      <div class="caustic-line c3"></div>
-      <div class="caustic-line c4"></div>
-    </div>
+    <div class="caustics"></div>
     <div class="refraction-band"></div>
     <div class="card-content">
       <div>
@@ -670,18 +640,13 @@
   </div>
 
   <!-- ====== 2x2 卡片 ====== -->
-  <div class="glass-card size-2x2" data-tilt data-lens-k="0.14">
-    <div class="lens-distort"></div>
+  <div class="glass-card size-2x2" data-tilt>
+    <div class="lens-layer" style="filter: url(#liquid-lens-lg)"></div>
     <div class="glass-body"></div>
-    <div class="rim-light"></div>
+    <div class="prismatic-edge"></div>
     <div class="chromatic-edge"></div>
     <div class="specular"></div>
-    <div class="caustics">
-      <div class="caustic-line c1"></div>
-      <div class="caustic-line c2"></div>
-      <div class="caustic-line c3"></div>
-      <div class="caustic-line c4"></div>
-    </div>
+    <div class="caustics"></div>
     <div class="refraction-band"></div>
     <div class="card-content">
       <div>
@@ -692,34 +657,31 @@
       </div>
       <div>
         <div class="card-value">4:32</div>
-        <div class="card-desc" style="margin-top:6px">Track 3 of 8</div>
+        <div class="card-desc" style="margin-top:8px">Track 3 of 8</div>
       </div>
     </div>
     <span class="format-label">2 x 2</span>
   </div>
 
   <!-- ====== 4x2 卡片 ====== -->
-  <div class="glass-card size-4x2" data-tilt data-lens-k="0.12">
-    <div class="lens-distort"></div>
+  <div class="glass-card size-4x2" data-tilt>
+    <div class="lens-layer" style="filter: url(#liquid-lens)"></div>
     <div class="glass-body"></div>
-    <div class="rim-light"></div>
+    <div class="prismatic-edge"></div>
     <div class="chromatic-edge"></div>
     <div class="specular"></div>
-    <div class="caustics">
-      <div class="caustic-line c1"></div>
-      <div class="caustic-line c2"></div>
-      <div class="caustic-line c3"></div>
-      <div class="caustic-line c4"></div>
-    </div>
+    <div class="caustics"></div>
     <div class="refraction-band"></div>
     <div class="card-content">
       <div class="card-info">
         <div class="card-icon">&#9677;</div>
         <div class="card-label">System Status</div>
-        <div class="card-title" style="font-size:18px">All Services Operational</div>
-        <div class="card-desc">Uptime 99.97% &middot; 12ms</div>
+        <div class="card-title" style="font-size:20px">All Services Operational</div>
+        <div class="card-desc">Uptime: 99.97% &middot; Latency: 12ms</div>
       </div>
-      <div class="card-visual" id="bar-chart"></div>
+      <div class="card-visual" id="bar-chart">
+        <!-- JS 动态生成柱状图 -->
+      </div>
     </div>
     <span class="format-label">4 x 2</span>
   </div>
@@ -728,127 +690,19 @@
 
 <script>
 /**
- * 液态玻璃卡片
+ * 液态玻璃卡片交互
  *
- * 核心效果：
- * 1. 桶形畸变 — Canvas 生成位移贴图 + SVG feDisplacementMap
- *    中心放大、边缘压缩，模拟凸透镜折射
- * 2. 全内反射边缘光 — conic-gradient 角度依赖亮度
- * 3. 流动焦散线 — 细长弯曲高光动画
- * 4. 表面张力有机边缘 — 非对称 border-radius 呼吸动画
- * 5. 环境色渗透 — 高饱和度 backdrop-filter
- * 6. 鼠标追踪高光 + 3D 倾斜
+ * 功能：
+ * 1. 鼠标追踪高光反射
+ * 2. 3D 倾斜效果
+ * 3. 点击涟漪
+ * 4. 4x2 卡片动态柱状图
  */
 
 (function () {
   'use strict';
 
-  /* ============================================
-     1. 桶形畸变位移贴图生成
-     ============================================ */
-  function generateBarrelMap(w, h, k) {
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    const img = ctx.createImageData(w, h);
-    const d = img.data;
-    const cx = w / 2;
-    const cy = h / 2;
-    const maxR = Math.sqrt(cx * cx + cy * cy);
-
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const dx = x - cx;
-        const dy = y - cy;
-        const r = Math.sqrt(dx * dx + dy * dy);
-        const rn = r / maxR;
-
-        // 桶形畸变：从更靠近中心的位置采样 → 中心放大、边缘压缩
-        const factor = k * rn * rn;
-        const dispX = -dx * factor;
-        const dispY = -dy * factor;
-
-        // 归一化到 0-255（128 = 无位移）
-        const maxDX = cx * k || 1;
-        const maxDY = cy * k || 1;
-        const rVal = Math.round(128 + (dispX / maxDX) * 127);
-        const gVal = Math.round(128 + (dispY / maxDY) * 127);
-
-        const i = (y * w + x) * 4;
-        d[i]     = Math.max(0, Math.min(255, rVal));
-        d[i + 1] = Math.max(0, Math.min(255, gVal));
-        d[i + 2] = 128;
-        d[i + 3] = 255;
-      }
-    }
-
-    ctx.putImageData(img, 0, 0);
-    return canvas.toDataURL('image/png');
-  }
-
-  /* ============================================
-     2. 为每张卡片创建桶形畸变 SVG 滤镜
-     ============================================ */
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const defs = document.querySelector('.svg-defs defs');
-
-  function createBarrelFilter(card, id) {
-    const lens = card.querySelector('.lens-distort');
-    if (!lens) return;
-
-    const rect = lens.getBoundingClientRect();
-    const w = Math.round(rect.width) || 300;
-    const h = Math.round(rect.height) || 300;
-    const k = parseFloat(card.dataset.lensK) || 0.15;
-
-    // 生成位移贴图
-    const mapUrl = generateBarrelMap(w, h, k);
-
-    // 创建 SVG 滤镜
-    const filter = document.createElementNS(svgNS, 'filter');
-    filter.setAttribute('id', id);
-    filter.setAttribute('x', '-12%');
-    filter.setAttribute('y', '-12%');
-    filter.setAttribute('width', '124%');
-    filter.setAttribute('height', '124%');
-    filter.setAttribute('color-interpolation-filters', 'sRGB');
-
-    // 位移贴图图像
-    const feImg = document.createElementNS(svgNS, 'feImage');
-    feImg.setAttribute('href', mapUrl);
-    feImg.setAttribute('result', 'barrelMap');
-    feImg.setAttribute('x', '0');
-    feImg.setAttribute('y', '0');
-    feImg.setAttribute('width', w + 'px');
-    feImg.setAttribute('height', h + 'px');
-
-    // 应用位移映射
-    const maxDisp = Math.max(w, h) / 2 * k;
-    const scale = Math.round(maxDisp * 2.2);
-    const feDisp = document.createElementNS(svgNS, 'feDisplacementMap');
-    feDisp.setAttribute('in', 'SourceGraphic');
-    feDisp.setAttribute('in2', 'barrelMap');
-    feDisp.setAttribute('scale', scale);
-    feDisp.setAttribute('xChannelSelector', 'R');
-    feDisp.setAttribute('yChannelSelector', 'G');
-
-    filter.appendChild(feImg);
-    filter.appendChild(feDisp);
-    defs.appendChild(filter);
-
-    // 应用滤镜 + 边缘噪声
-    lens.style.filter = `url(#${id}) url(#edge-warp)`;
-  }
-
-  // 初始化所有卡片的滤镜
-  document.querySelectorAll('[data-tilt]').forEach((card, i) => {
-    createBarrelFilter(card, `barrel-${i}`);
-  });
-
-  /* ============================================
-     3. 鼠标追踪高光 + 3D 倾斜
-     ============================================ */
+  /* ---- 鼠标追踪高光 + 3D 倾斜 ---- */
   const cards = document.querySelectorAll('[data-tilt]');
 
   cards.forEach((card) => {
@@ -858,26 +712,25 @@
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const cx = rect.width / 2;
-      const cy = rect.height / 2;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
 
-      // 高光追踪
-      const sx = ((x / rect.width) * 100 - 50) * -2.2;
-      const sy = ((y / rect.height) * 100 - 50) * -2.2;
-      specular.style.setProperty('--spec-x', `${sx - 90}%`);
-      specular.style.setProperty('--spec-y', `${sy - 90}%`);
+      // 高光位置
+      const specX = ((x / rect.width) * 100 - 50) * -2;
+      const specY = ((y / rect.height) * 100 - 50) * -2;
+      specular.style.setProperty('--spec-x', `${specX - 80}%`);
+      specular.style.setProperty('--spec-y', `${specY - 80}%`);
 
       // 3D 倾斜
-      const ry = ((x - cx) / cx) * 5;
-      const rx = ((cy - y) / cy) * 5;
-      card.style.transform =
-        `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.015)`;
+      const rotateY = ((x - centerX) / centerX) * 6;
+      const rotateX = ((centerY - y) / centerY) * 6;
+      card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
     });
 
     card.addEventListener('mouseleave', () => {
-      card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) scale(1)';
-      specular.style.setProperty('--spec-x', '-90%');
-      specular.style.setProperty('--spec-y', '-90%');
+      card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
+      specular.style.setProperty('--spec-x', '-80%');
+      specular.style.setProperty('--spec-y', '-80%');
     });
 
     // 点击涟漪
@@ -896,9 +749,7 @@
     });
   });
 
-  /* ============================================
-     4. 4x2 卡片动态柱状图
-     ============================================ */
+  /* ---- 4x2 卡片柱状图 ---- */
   const barChart = document.getElementById('bar-chart');
   if (barChart) {
     const heights = [28, 45, 36, 58, 42, 65, 50, 38, 55, 48, 60, 40];
@@ -909,11 +760,14 @@
       barChart.appendChild(bar);
     });
 
+    // 缓慢动态变化
     setInterval(() => {
-      barChart.querySelectorAll('.bar').forEach((bar) => {
-        const cur = parseInt(bar.style.height, 10);
+      const bars = barChart.querySelectorAll('.bar');
+      bars.forEach((bar) => {
+        const current = parseInt(bar.style.height, 10);
         const delta = Math.round((Math.random() - 0.5) * 8);
-        bar.style.height = `${Math.max(16, Math.min(70, cur + delta))}px`;
+        const next = Math.max(16, Math.min(70, current + delta));
+        bar.style.height = `${next}px`;
       });
     }, 2000);
   }
